@@ -15,8 +15,8 @@ import requests
 import DownloadProgress
 import user_agent
 
-src = "D:/PycharmProjects/crawl_xuexi/"
-os.chdir(src)
+# src = "D:/PycharmProjects/crawl_xuexi/"
+# os.chdir(src)
 
 
 def get_video_links(url):
