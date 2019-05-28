@@ -14,6 +14,10 @@ import requests
 
 import DownloadProgress
 import user_agent
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
+import time
 
 # src = "D:/PycharmProjects/crawl_xuexi/"
 # os.chdir(src)
@@ -52,6 +56,7 @@ def downloadVideo(url, file_name):
 def crawl():
     with open("data/ml.json", "r", encoding="utf8") as f:
         mlData = json.loads(f.read())
+        pool = ThreadPoolExecutor(max_workers=10)  # 创建一个最大可容纳10个task的线程池
         for i in range((len(mlData["fpe1ki18v228w00"]))):
             frst_name = mlData["fpe1ki18v228w00"][i]["frst_name"].replace('\t', ' ')
             static_page_url = mlData["fpe1ki18v228w00"][i]["static_page_url"]
@@ -61,8 +66,11 @@ def crawl():
             pattern = r'src="./data(.*?)"></script>'
             url = "https://www.xuexi.cn/" + preUrl + "/data" + re.findall(pattern, resData, re.I)[0]
             res = get_video_links(url)[0]
-            downloadVideo(res, file_name=frst_name)
+            future1 = pool.submit(downloadVideo,
+                                  res, frst_name)  # 往线程池里面加入一个task
 
 
 if __name__ == '__main__':
+    start_time = time.time()
     crawl()
+    print("last time: {} s".format(time.time() - start_time))
