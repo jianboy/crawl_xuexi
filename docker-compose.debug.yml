@@ -1,0 +1,10 @@
+version: '2.1'
+
+services:
+  crawl_xuexi:
+    image: crawl_xuexi
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
