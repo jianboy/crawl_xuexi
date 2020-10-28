@@ -6,7 +6,8 @@
 __author__ = "liuyuqi"
 
 import json
-import os,sys
+import os
+import sys
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -18,6 +19,7 @@ import DownloadProgress
 import user_agent
 
 s = requests.Session()
+
 
 def get_video_links(url):
     video = s.get(url=url).content.decode("utf8")
@@ -39,7 +41,7 @@ def downloadVideo(url, file_name):
         "Sec-Fetch-Site": "same-site",
         "Referer": "https://www.xuexi.cn/"
     }
-    with closing(s.get(url=url, stream=True,headers=headers)) as response:
+    with closing(s.get(url=url, stream=True, headers=headers)) as response:
         chunk_size = 1024
         content_size = int(response.headers['content-length'])
         file_D = './Video/' + file_name + '.mp4'
@@ -54,31 +56,54 @@ def downloadVideo(url, file_name):
                     file.write(data)
                     progress.refresh(count=len(data))
 
-def crawl(url):
-    lessonList = getLessonList(url)
-    mlData = json.loads(lessonList)
-    pool = ThreadPoolExecutor(max_workers=10)  # 创建一个最大可容纳10个task的线程池
-    print("已配置10个线程下载")
-    for i in range((len(mlData["fpe1ki18v228w00"]))):
-        frst_name = mlData["fpe1ki18v228w00"][i]["frst_name"].replace(
-            '\t', ' ')
-        static_page_url = mlData["fpe1ki18v228w00"][i]["static_page_url"]
-        # 打开 mp4 视频网页链接
-        resData = s.get(static_page_url).content.decode("utf8")
-        preUrl = static_page_url.split("/")[3]
-        pattern = r'src="./data(.*?)"></script>'
-        url = "https://www.xuexi.cn/" + preUrl + "/data" + re.findall(pattern, resData, re.I)[0]
-        res = get_video_links(url)[0]
-        print("已解析第 %s 个视频的下载地址：%s" % (i, res))
-        pool.submit(downloadVideo, res, frst_name)  # 往线程池里面加入一个task
 
+def crawl(url):
+    pool = ThreadPoolExecutor(max_workers=10)  # 创建一个最大可容纳10个task的线程池
+    if (url.startswith("https://www.xuexi.cn/lgpage/detail/index.html")):
+        lessonList = getLessonListByLgPage(url)
+        mlData = json.loads(lessonList)
+        for i in range(len(mlData["sub_items"])):
+            frst_name = mlData["sub_items"][i]["title"].replace(" ", "")
+            for j in range(len(mlData["sub_items"][i]["videos"][0]["video_storage_info"])):
+                res = mlData["sub_items"][i]["videos"][0]["video_storage_info"][j]["normal"]
+                if ".mp4" in res:
+                    break
+            pool.submit(downloadVideo, res, frst_name)
+    else:
+        lessonList = getLessonList(url)
+        mlData = json.loads(lessonList)
+        print("已配置10个线程下载")
+        for i in range((len(mlData["fpe1ki18v228w00"]))):
+            frst_name = mlData["fpe1ki18v228w00"][i]["frst_name"].replace(
+                '\t', ' ')
+            static_page_url = mlData["fpe1ki18v228w00"][i]["static_page_url"]
+            # 打开 mp4 视频网页链接
+            resData = s.get(static_page_url).content.decode("utf8")
+            preUrl = static_page_url.split("/")[3]
+            pattern = r'src="./data(.*?)"></script>'
+            url = "https://www.xuexi.cn/" + preUrl + \
+                "/data" + re.findall(pattern, resData, re.I)[0]
+            res = get_video_links(url)[0]
+            print("已解析第 %s 个视频的下载地址：%s" % (i, res))
+            pool.submit(downloadVideo, res, frst_name)  # 往线程池里面加入一个task
+
+
+def getLessonListByLgPage(url):
+    '''
+    针对新格式 url 解析视频
+    '''
+    newUrl = r"https://boot-source.xuexi.cn/data/app/" + url[49:] + ".js"
+    resData = s.get(url=newUrl).content.decode("utf8")
+    print("已解析视频列表数据...")
+    return resData[9:-1]
 
 def getLessonList(url):
     resData = s.get(url=url).content.decode("utf8")
     print("已解析视频列表数据...")
     pattern = r'src="./data(.*?)"></script>'
     preUrl = url.split("/")[3]
-    jsonUrl = "https://www.xuexi.cn/" + preUrl + "/data" + re.findall(pattern, resData, re.I)[0]
+    jsonUrl = "https://www.xuexi.cn/" + preUrl + \
+        "/data" + re.findall(pattern, resData, re.I)[0]
     resData2 = s.get(url=jsonUrl).content.decode("utf8")
     print("已请求视频列表数据...")
     return resData2[14:-1]
