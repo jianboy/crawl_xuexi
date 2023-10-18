@@ -4,6 +4,11 @@
 
 本项目初衷是下载 学习强国APP(www.xuexi.cn)上面的机器学习课程.后续用户需求，**支持所有 “学习慕课”栏目下的课程下载**。
 
+- [x] 课程批量下载
+- [x] 电台音频下载
+- [x] 多线程
+- [x] 支持断点续传
+
 《机器学习课程》
 链接：https://pan.baidu.com/s/1U8Nu4ZStfpQfuCnaoXmWIg
 提取码：3b3s
@@ -11,7 +16,7 @@
 由于"学习强国APP"上视频采用cdn分发,而百度云下载限速,所以建议直接用本项目程序下载视频,方便,迅速.
 
 ![](screenshot/BaiduHi_2019-4-8_16-26-42.png)
-
+![](screenshot/BaiduHi_2023-10-19_3-41-33.jpg)
 
 ### 使用
 1. 到 https://github.com/jianboy/crawl_xuexi/releases 下载 crwal_xuexi.zip 可执行文件.
