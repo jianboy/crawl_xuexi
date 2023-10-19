@@ -10,6 +10,7 @@ import re,json,requests,os
 from concurrent.futures import ThreadPoolExecutor
 from . import DownloadProgress
 from contextlib import closing
+from urllib.parse import urlparse, parse_qs
 
 class Xuexi(object):
     ''' xuexi class '''
@@ -102,10 +103,13 @@ class Xuexi(object):
     def getLessonListByLgPage(self, url):
         '''
         针对新格式 url 解析视频
+         https://www.xuexi.cn/lgpage/detail/index.html?id=3645649255073663875
         '''
-        pattern = r'index.html\?id=(.*?)&'
-        id = re.findall(pattern, url, re.I)[0]
-        newUrl = r"https://boot-source.xuexi.cn/data/app/" + id + ".js"
+        # get  the id from url
+        parsed_url = urlparse(url)
+        query_params = parse_qs(parsed_url.query)
+        lesson_id = query_params.get('id', None)[0]
+        newUrl = r"https://boot-source.xuexi.cn/data/app/" + lesson_id + ".js"
         resData = self.sess.get(url=newUrl).content.decode("utf8")
         print("已解析视频列表数据...")
         return resData[9:-1]
