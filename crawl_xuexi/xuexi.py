@@ -35,6 +35,7 @@ class Xuexi(object):
             "Sec-Fetch-Dest": "video",
             "Sec-Fetch-Mode": "no-cors",
             "Sec-Fetch-Site": "same-site",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36",
             "Referer": "https://www.xuexi.cn/"
         }
         with closing(self.sess.get(url=url, stream=True, headers=headers)) as response:
